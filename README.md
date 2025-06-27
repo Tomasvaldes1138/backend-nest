@@ -23,6 +23,8 @@
 
 ## Description
 
+Este es el repositorio de tarea correspondiente al curso de agibiz de Tomas Valdes Bustamante
+
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Project setup
