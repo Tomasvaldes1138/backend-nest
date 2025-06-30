@@ -9,18 +9,18 @@ metadata:
   name: backend-nest-tvb
   namespace: lab-tvb
   labels:
-  app: backend-nest-tvb
+    app: backend-nest-tvb
 spec:
   replicas: 2
   selector:
-    matchlabels:
+    matchLabels:
       app: backend-nest-tvb
   template:
     metadata:
       labels:
         app: backend-nest-tvb
-      spec:
-        containers:
+    spec:
+      containers:
         - name: backend-nest-tvb
           image: us-west1-docker.pkg.dev/lab-agibiz/docker-repository/backend-nest-tvb
           imagePullPolicy: Always
