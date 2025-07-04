@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:22-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
    
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
