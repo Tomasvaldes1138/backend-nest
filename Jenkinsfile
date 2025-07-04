@@ -1,24 +1,76 @@
 pipeline {
     agent any
-    
+   
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
         dockerImagePrefix = "us-west1-docker.pkg.dev/lab-agibiz/docker-repository"
         registry = "https://us-west1-docker.pkg.dev"
         registryCredentials = 'gcp-registry'
+        imageName = "backend-nest-test-tvb"
     }
-    
+   
     stages {
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    echo 'Installing dependencies...'
+                    sh 'npm ci --cache ${NPM_CONFIG_CACHE}'
+                }
+            }
+        }
+        
+        stage('Testing') {
+            steps {
+                script {
+                    echo 'Running tests...'
+                    sh 'npm test'
+                }
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                script {
+                    echo 'Building application...'
+                    sh 'npm run build'
+                }
+            }
+        }
+        
         stage('Build and Push Docker Image') {
             steps {
                 script {
                     docker.withRegistry("${registry}", registryCredentials) {
-                        sh "docker build -t backend-nest-test-tvb ."
-                        sh "docker tag backend-nest-test-tvb:latest ${dockerImagePrefix}/backend-nest-test-tvb"
-                        sh "docker push ${dockerImagePrefix}/backend-nest-test-tvb"
+                        // Construir la imagen
+                        def dockerImage = docker.build("${imageName}:${BUILD_NUMBER}")
+                        
+                        // Tag con latest
+                        sh "docker tag ${imageName}:${BUILD_NUMBER} ${dockerImagePrefix}/${imageName}:latest"
+                        
+                        // Tag con build number
+                        sh "docker tag ${imageName}:${BUILD_NUMBER} ${dockerImagePrefix}/${imageName}:${BUILD_NUMBER}"
+                        
+                        // Push ambas versiones
+                        sh "docker push ${dockerImagePrefix}/${imageName}:latest"
+                        sh "docker push ${dockerImagePrefix}/${imageName}:${BUILD_NUMBER}"
                     }
                 }
             }
+        }
+    }
+    
+    post {
+        always {
+            // Limpiar imágenes locales para ahorrar espacio
+            sh "docker rmi -f ${imageName}:${BUILD_NUMBER} || true"
+            sh "docker rmi -f ${dockerImagePrefix}/${imageName}:latest || true"
+            sh "docker rmi -f ${dockerImagePrefix}/${imageName}:${BUILD_NUMBER} || true"
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
