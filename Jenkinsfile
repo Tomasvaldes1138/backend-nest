@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:22-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v /opt/sa-registry.json:/opt/sa-registry.json'
+        }
+    }
     
     environment {
         PROJECT_NAME = 'backend-nest-test-tvb'  
