@@ -19,6 +19,6 @@ COPY --from=etapa-uno /usr/app/package*.json ./
 RUN npm install --only=production
 
 
-EXPOSE 3000
+EXPOSE 3021
 
 CMD ["node", "dist/main.js"]

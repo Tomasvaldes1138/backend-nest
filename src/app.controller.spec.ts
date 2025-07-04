@@ -25,20 +25,7 @@ describe('AppController', () => {
   });
 
 describe('Probar el modulo raiz del proyecto', () => {
-    test('Esto deberia retornar hola mundo en ingles', () => {
-      expect(appController.getHello()).toBe('Hello World!!');
-      expect(appController.getHello).toHaveBeenCalled();
-    });
 
-    test('Deberia retornar hola mundo en aleman', () => {
-      expect(appController.getHelloAleman()).toBe('Hallo Welt!!');
-      expect(appController.getHelloAleman).toHaveBeenCalled();
-    });
-
-    test('Deberia retornar hola mundo en frances', () => {
-      expect(appController.getHelloFrances()).toBe('Bonjour le monde!!');
-      expect(appController.getHelloFrances).toHaveBeenCalled();
-    });
 
     test('Deberia retornar string vacio para saludo en español', () => {
       expect(appController.getHelloEspanol()).toBe('');

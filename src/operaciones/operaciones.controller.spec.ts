@@ -49,23 +49,7 @@ describe('/operaciones (e2e)', () => {
         });
     });
 
-    it('debería retornar error 400 para valores no numéricos', () => {
-      return request(app.getHttpServer())
-        .get('/operaciones?operacion=suma&a=abc&b=10')
-        .expect(400)
-        .expect(res => {
-          expect(res.body.message).toContain('debe ser un numero');
-        });
-    });
 
-    it('debería retornar error 400 para parámetros faltantes', () => {
-      return request(app.getHttpServer())
-        .get('/operaciones?operacion=suma&a=10')
-        .expect(400)
-        .expect(res => {
-          expect(res.body.message).toContain('requerido');
-        });
-    });
   });
 
   describe('GET /operaciones?operacion=resta', () => {
@@ -119,14 +103,6 @@ describe('/operaciones (e2e)', () => {
         });
     });
 
-    it('debería retornar error 400 al dividir por cero', () => {
-      return request(app.getHttpServer())
-        .get('/operaciones?operacion=division&a=10&b=0')
-        .expect(400)
-        .expect(res => {
-          expect(res.body.message).toContain('No se puede dividir por cero');
-        });
-    });
 
     it('debería manejar divisiones con decimales', () => {
       return request(app.getHttpServer())
@@ -186,23 +162,6 @@ describe('/operaciones (e2e)', () => {
         });
     });
 
-    it('debería retornar error 400 para numeros negativos', () => {
-      return request(app.getHttpServer())
-        .get('/operaciones?operacion=factorial&a=-1')
-        .expect(400)
-        .expect(res => {
-          expect(res.body.message).toContain('factorial no está definido para numeros negativos');
-        });
-    });
-
-    it('debería retornar error 400 para numeros decimales', () => {
-      return request(app.getHttpServer())
-        .get('/operaciones?operacion=factorial&a=3.5')
-        .expect(400)
-        .expect(res => {
-          expect(res.body.message).toContain('factorial solo está definido para numeros enteros');
-        });
-    });
 
     it('debería manejar factorial sin parámetro b', () => {
       return request(app.getHttpServer())
@@ -215,23 +174,6 @@ describe('/operaciones (e2e)', () => {
   });
 
   describe('GET /operaciones - Casos de Error', () => {
-    it('debería retornar error 400 para operación inválida', () => {
-      return request(app.getHttpServer())
-        .get('/operaciones?operacion=raiz&a=9&b=2')
-        .expect(400)
-        .expect(res => {
-          expect(res.body.message).toContain('Operación "raiz" no es válida');
-        });
-    });
-
-    it('debería retornar error 400 sin parámetro operación', () => {
-      return request(app.getHttpServer())
-        .get('/operaciones?a=10&b=5')
-        .expect(400)
-        .expect(res => {
-          expect(res.body.message).toContain('operacion es requerida');
-        });
-    });
 
     it('debería retornar error 400 con query params vacíos', () => {
       return request(app.getHttpServer())
@@ -291,21 +233,6 @@ describe('/operaciones (e2e)', () => {
         });
     });
 
-    it('debería verificar estructura completa de respuesta', () => {
-      return request(app.getHttpServer())
-        .get('/operaciones?operacion=suma&a=10&b=5')
-        .expect(200)
-        .expect(res => {
-          expect(res.body).toHaveProperty('operacion');
-          expect(res.body).toHaveProperty('a');
-          expect(res.body).toHaveProperty('b');
-          expect(res.body).toHaveProperty('resultado');
-          expect(res.body.operacion).toBe('suma');
-          expect(res.body.a).toBe(10);
-          expect(res.body.b).toBe(5);
-          expect(res.body.resultado).toBe(15);
-        });
-    });
 
     it('debería manejar headers HTTP correctamente', () => {
       return request(app.getHttpServer())

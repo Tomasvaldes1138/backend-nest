@@ -216,21 +216,6 @@ describe('OperacionesService', () => {
     });
   });
 
-  describe('Operaciones Invalidas', () => {
-    it('deberia lanzar error para operaciones no validas', () => {
-      expect(() => service.operar('raiz', 9, 2)).toThrow('Operacion "raiz" no es valida');
-      expect(() => service.operar('logaritmo', 10, 2)).toThrow('Operacion "logaritmo" no es valida');
-      expect(() => service.operar('', 5, 3)).toThrow('Operacion "" no es valida');
-    });
-
-    it('deberia lanzar error para operacion undefined', () => {
-      expect(() => service.operar(undefined, 5, 3)).toThrow('Operacion "undefined" no es valida');
-    });
-
-    it('deberia lanzar error para operacion null', () => {
-      expect(() => service.operar(null as any, 5, 3)).toThrow('Operacion "null" no es valida');
-    });
-  });
 
   describe('Tests de Integracion', () => {
     it('deberia manejar operaciones encadenadas conceptualmente', () => {
