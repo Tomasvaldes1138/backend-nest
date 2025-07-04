@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:22-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
    
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
@@ -11,12 +16,6 @@ pipeline {
    
     stages {
         stage('Install Dependencies') {
-            agent {
-                docker {
-                    image 'node:22-alpine'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
             steps {
                 script {
                     echo 'Installing dependencies...'
@@ -24,14 +23,8 @@ pipeline {
                 }
             }
         }
-       
+        
         stage('Testing') {
-            agent {
-                docker {
-                    image 'node:22-alpine'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
             steps {
                 script {
                     echo 'Running tests...'
@@ -39,14 +32,8 @@ pipeline {
                 }
             }
         }
-       
+        
         stage('Build') {
-            agent {
-                docker {
-                    image 'node:22-alpine'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
             steps {
                 script {
                     echo 'Building application...'
@@ -54,20 +41,20 @@ pipeline {
                 }
             }
         }
-       
+        
         stage('Build and Push Docker Image') {
             steps {
                 script {
                     docker.withRegistry("${registry}", registryCredentials) {
                         // Construir la imagen
                         def dockerImage = docker.build("${imageName}:${BUILD_NUMBER}")
-                       
+                        
                         // Tag con latest
                         sh "docker tag ${imageName}:${BUILD_NUMBER} ${dockerImagePrefix}/${imageName}:latest"
-                       
+                        
                         // Tag con build number
                         sh "docker tag ${imageName}:${BUILD_NUMBER} ${dockerImagePrefix}/${imageName}:${BUILD_NUMBER}"
-                       
+                        
                         // Push ambas versiones
                         sh "docker push ${dockerImagePrefix}/${imageName}:latest"
                         sh "docker push ${dockerImagePrefix}/${imageName}:${BUILD_NUMBER}"
@@ -76,7 +63,7 @@ pipeline {
             }
         }
     }
-   
+    
     post {
         always {
             // Limpiar imágenes locales para ahorrar espacio
