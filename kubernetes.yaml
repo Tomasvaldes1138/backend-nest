@@ -20,4 +20,19 @@ spec:
           image: us-west1-docker.pkg.dev/lab-agibiz/docker-repository/backend-nest-test-tvb
           imagePullPolicy: Always
       imagePullSecrets:
-        - name: regcred 
+        - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-nest-test-tvb-svc
+  namespace: lab-tvb
+  labels:
+  app: backend-nest-test-tvb-svc
+spec:
+  selector:
+    app: backend-nest-test-tvb
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3021
