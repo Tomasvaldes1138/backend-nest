@@ -2,74 +2,76 @@ pipeline {
     agent {
         docker {
             image 'node:22-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
-   
+
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
-        dockerImagePrefix = "us-west1-docker.pkg.dev/lab-agibiz/docker-repository"
+        fullImageName = "us-west1-docker.pkg.dev/lab-agibiz/docker-repository/backend-nest-test-tvb"
         registry = "https://us-west1-docker.pkg.dev"
         registryCredentials = 'gcp-registry'
-        imageName = "backend-nest-test-tvb"
     }
-   
+
     stages {
+        // ETAPA NUEVA: Instala las herramientas necesarias que no vienen en la imagen base.
+        stage('Install Tools') {
+            steps {
+                echo 'Installing Docker CLI...'
+                // Usa el gestor de paquetes de Alpine (apk) para añadir el cliente de Docker.
+                sh 'apk add --no-cache docker-cli'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
-                script {
-                    echo 'Installing dependencies...'
-                    sh 'npm ci --cache ${NPM_CONFIG_CACHE}'
-                }
+                echo 'Installing dependencies...'
+                sh 'npm ci --cache ${NPM_CONFIG_CACHE}'
             }
         }
-        
+
         stage('Testing') {
             steps {
-                script {
-                    echo 'Running tests...'
-                    sh 'npm test'
-                }
+                echo 'Running tests...'
+                sh 'npm test'
             }
         }
-        
+
         stage('Build') {
             steps {
-                script {
-                    echo 'Building application...'
-                    sh 'npm run build'
-                }
+                echo 'Building application...'
+                sh 'npm run build'
             }
         }
-        
+
+        // ETAPA CORREGIDA Y OPTIMIZADA
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry("${registry}", registryCredentials) {
-                        // Construir la imagen
-                        def dockerImage = docker.build("${imageName}:${BUILD_NUMBER}")
-                        
-                        // Tag con latest
-                        sh "docker tag ${imageName}:${BUILD_NUMBER} ${dockerImagePrefix}/${imageName}:latest"
-                        
-                        // Tag con build number
-                        sh "docker tag ${imageName}:${BUILD_NUMBER} ${dockerImagePrefix}/${imageName}:${BUILD_NUMBER}"
-                        
-                        // Push ambas versiones
-                        sh "docker push ${dockerImagePrefix}/${imageName}:latest"
-                        sh "docker push ${dockerImagePrefix}/${imageName}:${BUILD_NUMBER}"
+                    docker.withRegistry(registry, registryCredentials) {
+                        // Construye la imagen directamente con el nombre completo y la etiqueta del build number.
+                        def customImage = docker.build("${fullImageName}:${BUILD_NUMBER}", ".")
+
+                        // Sube la imagen con la etiqueta del build number.
+                        customImage.push()
+
+                        // Agrega la etiqueta 'latest' a la imagen ya subida y la empuja al registry.
+                        customImage.push('latest')
                     }
                 }
             }
         }
     }
-    
+
     post {
         always {
-            // Limpiar imágenes locales para ahorrar espacio
-            sh "docker rmi -f ${imageName}:${BUILD_NUMBER} || true"
-            sh "docker rmi -f ${dockerImagePrefix}/${imageName}:latest || true"
-            sh "docker rmi -f ${dockerImagePrefix}/${imageName}:${BUILD_NUMBER} || true"
+            script {
+                // Limpia las imágenes locales para ahorrar espacio.
+                // El '|| true' evita que el pipeline falle si la imagen no existe.
+                echo 'Cleaning up local Docker images...'
+                sh "docker rmi -f ${fullImageName}:${BUILD_NUMBER} || true"
+                sh "docker rmi -f ${fullImageName}:latest || true"
+            }
         }
         success {
             echo 'Pipeline completed successfully!'
