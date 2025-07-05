@@ -73,12 +73,9 @@ pipeline {
                                rollout status deployment/${K8S_DEPLOYMENT_NAME}
                         """
                     }
-                    echo "✅ Deployment successful!"
+                    echo "Deployment successful!"
                 }
             }
         }
-    } 
-
-    post {
     }
 }
