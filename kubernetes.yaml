@@ -28,7 +28,7 @@ metadata:
   name: backend-nest-test-tvb-svc
   namespace: lab-tvb
   labels:
-  app: backend-nest-test-tvb-svc
+    app: backend-nest-test-tvb-svc
 spec:
   selector:
     app: backend-nest-test-tvb
