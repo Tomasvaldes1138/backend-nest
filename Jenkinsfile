@@ -57,23 +57,15 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    echo "Deploying image ${fullImageName}:${BUILD_NUMBER} to Kubernetes..."
-                    withCredentials([file(credentialsId: 'kubeconfig-gke', variable: 'KUBECONFIG_FILE')]) {
-                        
-                        sh """
-                           kubectl --kubeconfig \$KUBECONFIG_FILE \\
-                               set image deployment/${K8S_DEPLOYMENT_NAME} \\
-                               ${K8S_CONTAINER_NAME}=${fullImageName}:${BUILD_NUMBER}
-                        """
-                        
-                        sh """
-                           kubectl --kubeconfig \$KUBECONFIG_FILE \\
-                               rollout status deployment/${K8S_DEPLOYMENT_NAME}
-                        """
+            agent {
+                docker {
+                    image 'alpine/k8s:1.30.2'
+                    reuseNode true
+                }
+                steps {
+                    withKubeConfig([credentialsId: 'gcp-kubeconfig']){
+                        sh 'kubectl -n lab-tvb set image deployments/backend-nest-test-tvb backend-nest-test-tvb=${fullImageName}:${BUILD_NUMBER}'
                     }
-                    echo "Deployment successful!"
                 }
             }
         }
