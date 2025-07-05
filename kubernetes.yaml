@@ -1,26 +1,21 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: lab-tvb
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-nest-tvb
-  namespace: lab-tvb
+  name: backend-nest-test-tvb
+  namespace: lab-tvb                 
   labels:
-    app: backend-nest-tvb
+    app: backend-nest-test-tvb
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: backend-nest-tvb
+      app: backend-nest-test-tvb
   template:
     metadata:
       labels:
-        app: backend-nest-tvb
+        app: backend-nest-test-tvb
     spec:
       containers:
-        - name: backend-nest-tvb
-          image: us-west1-docker.pkg.dev/lab-agibiz/docker-repository/backend-nest-tvb
+        - name: backend-nest-test-tvb
+          image: us-west1-docker.pkg.dev/lab-agibiz/docker-repository/backend-nest-test-tvb
           imagePullPolicy: Always

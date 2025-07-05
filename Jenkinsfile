@@ -11,15 +11,15 @@ pipeline {
         fullImageName = "us-west1-docker.pkg.dev/lab-agibiz/docker-repository/backend-nest-test-tvb"
         registry = "https://us-west1-docker.pkg.dev"
         registryCredentials = 'gcp-registry'
+        K8S_DEPLOYMENT_NAME = 'backend-nest-test-tvb'
+        K8S_CONTAINER_NAME = 'backend-nest-test-tvb'
     }
 
     stages {
-        // ETAPA NUEVA: Instala las herramientas necesarias que no vienen en la imagen base.
         stage('Install Tools') {
             steps {
-                echo 'Installing Docker CLI...'
-                // Usa el gestor de paquetes de Alpine (apk) para añadir el cliente de Docker.
-                sh 'apk add --no-cache docker-cli'
+                echo 'Installing tools...'
+                sh 'apk add --no-cache docker-cli kubectl'
             }
         }
 
@@ -44,40 +44,41 @@ pipeline {
             }
         }
 
-        // ETAPA CORREGIDA Y OPTIMIZADA
         stage('Build and Push Docker Image') {
             steps {
                 script {
                     docker.withRegistry(registry, registryCredentials) {
-                        // Construye la imagen directamente con el nombre completo y la etiqueta del build number.
                         def customImage = docker.build("${fullImageName}:${BUILD_NUMBER}", ".")
-
-                        // Sube la imagen con la etiqueta del build number.
                         customImage.push()
-
-                        // Agrega la etiqueta 'latest' a la imagen ya subida y la empuja al registry.
                         customImage.push('latest')
                     }
                 }
             }
         }
-    }
 
-    post {
-        always {
-            script {
-                // Limpia las imágenes locales para ahorrar espacio.
-                // El '|| true' evita que el pipeline falle si la imagen no existe.
-                echo 'Cleaning up local Docker images...'
-                sh "docker rmi -f ${fullImageName}:${BUILD_NUMBER} || true"
-                sh "docker rmi -f ${fullImageName}:latest || true"
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    echo "Deploying image ${fullImageName}:${BUILD_NUMBER} to Kubernetes..."
+                    withCredentials([file(credentialsId: 'kubeconfig-gke', variable: 'KUBECONFIG_FILE')]) {
+                        
+                        sh """
+                           kubectl --kubeconfig \$KUBECONFIG_FILE \\
+                               set image deployment/${K8S_DEPLOYMENT_NAME} \\
+                               ${K8S_CONTAINER_NAME}=${fullImageName}:${BUILD_NUMBER}
+                        """
+                        
+                        sh """
+                           kubectl --kubeconfig \$KUBECONFIG_FILE \\
+                               rollout status deployment/${K8S_DEPLOYMENT_NAME}
+                        """
+                    }
+                    echo "✅ Deployment successful!"
+                }
             }
         }
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
+    } 
+
+    post {
     }
 }
