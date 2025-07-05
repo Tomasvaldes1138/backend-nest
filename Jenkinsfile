@@ -63,10 +63,12 @@ pipeline {
                     image 'alpine/k8s:1.30.2'
                     reuseNode true
                 }
-                steps {
-                    withKubeConfig([credentialsId: kubeconfigCredentials]){
-                        sh 'kubectl -n lab-tvb set image deployments/backend-nest-test-tvb backend-nest-test-tvb=${fullImageName}:${BUILD_NUMBER}'
-                    }
+            }
+            steps {
+                withKubeConfig([credentialsId: kubeconfigCredentials]) {
+                    sh '''
+                        kubectl -n lab-tvb set image deployments/${K8S_DEPLOYMENT_NAME} ${K8S_CONTAINER_NAME}=${fullImageName}:${BUILD_NUMBER}
+                    '''
                 }
             }
         }
