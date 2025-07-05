@@ -19,3 +19,5 @@ spec:
         - name: backend-nest-test-tvb
           image: us-west1-docker.pkg.dev/lab-agibiz/docker-repository/backend-nest-test-tvb
           imagePullPolicy: Always
+      imagePullSecrets:
+        - name: regcred 
