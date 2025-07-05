@@ -11,6 +11,7 @@ pipeline {
         fullImageName = "us-west1-docker.pkg.dev/lab-agibiz/docker-repository/backend-nest-test-tvb"
         registry = "https://us-west1-docker.pkg.dev"
         registryCredentials = 'gcp-registry'
+        kubeconfigCredentials = 'gcp-kubeconfig'
         K8S_DEPLOYMENT_NAME = 'backend-nest-test-tvb'
         K8S_CONTAINER_NAME = 'backend-nest-test-tvb'
     }
@@ -63,7 +64,7 @@ pipeline {
                     reuseNode true
                 }
                 steps {
-                    withKubeConfig([credentialsId: 'gcp-kubeconfig']){
+                    withKubeConfig([credentialsId: kubeconfigCredentials]){
                         sh 'kubectl -n lab-tvb set image deployments/backend-nest-test-tvb backend-nest-test-tvb=${fullImageName}:${BUILD_NUMBER}'
                     }
                 }
