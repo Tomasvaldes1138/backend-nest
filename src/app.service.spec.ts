@@ -163,7 +163,7 @@ describe('AppService', () => {
 
       return Promise.all(promises).then(results => {
         expect(results).toHaveLength(4);
-        expect(results[0]).toBe('Hello World!!');
+        expect(results[0]).toBe('Hello Mundo!!');
         expect(results[1]).toBe('Hallo Welt');
         expect(results[2]).toBe('mi mensaje de pruebas');
         expect(results[3]).toBe('Hola Mundo!!');
